@@ -38,48 +38,17 @@ sort_with{l}{n}(arr, len, cmp) = let
     (arr: !$A.arr(a, l, n), j: int j, key: a, len: int n)
     : void =
     if j >= 0 then let
-      val j1 = g1ofg0(j)
+      val cur = $A.get<a>(arr, $AR.checked_idx(j, len))
+      val c = cmp(cur, key)
     in
-      if j1 >= 0 then
-        if j1 < len then let
-          val cur = $A.get<a>(arr, j1)
-          val c = cmp(cur, key)
-        in
-          if c > 0 then let
-            val j1p1 = j1 + 1
-          in
-            if j1p1 < len then let
-              val () = $A.set<a>(arr, j1p1, cur)
-            in
-              loop_j(arr, j - 1, key, len)
-            end
-            else ()
-          end
-          else let
-            val jp1 = j + 1
-            val jp1g = g1ofg0(jp1)
-          in
-            if jp1g >= 0 then
-              if jp1g < len then
-                $A.set<a>(arr, jp1g, key)
-              else ()
-            else ()
-          end
-        end
-        else ()
-      else ()
+      if c > 0 then let
+        val () = $A.set<a>(arr, $AR.checked_idx(j + 1, len), cur)
+      in loop_j(arr, j - 1, key, len) end
+      else
+        $A.set<a>(arr, $AR.checked_idx(j + 1, len), key)
     end
-    else let
-      (* j = -1, place key at position 0 *)
-      val jp1 = j + 1
-      val jp1g = g1ofg0(jp1)
-    in
-      if jp1g >= 0 then
-        if jp1g < len then
-          $A.set<a>(arr, jp1g, key)
-        else ()
-      else ()
-    end
+    else
+      $A.set<a>(arr, $AR.checked_idx(j + 1, len), key)
 
   (*
    * Outer loop: iterate i from 1 to n-1.
