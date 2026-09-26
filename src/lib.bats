@@ -74,9 +74,12 @@ end
    Implementation -- sort_int via sort_with
    ============================================================ *)
 
+(* Three-way comparison: a - b would overflow for large differences
+   (e.g. the minimum int against any positive value). *)
 implement
 sort_int{l}{n}(arr, len) =
-  sort_with<int>(arr, len, lam (a: int, b: int): int =<cloref1> a - b)
+  sort_with<int>(arr, len,
+    lam (a: int, b: int): int =<cloref1> if a < b then ~1 else if a > b then 1 else 0)
 
 (* ============================================================
    Static tests
