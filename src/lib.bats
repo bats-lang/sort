@@ -30,25 +30,26 @@ implement{a}
 sort_with{l}{n}(arr, len, cmp) = let
   (*
    * Inner loop: shift elements right while arr[j] > key.
-   * j ranges from n-2 down to -1.
+   * j ranges from n-2 down to -1, so j + 1 < n: both j (once j >= 0)
+   * and j + 1 are proven indices.
    * Metric: j + 1 (always non-negative, decreases each step).
    *)
   fun loop_j
-    {j:int | j >= ~1; j < n} .<j + 1>.
+    {j:int | j >= ~1; j + 1 < n} .<j + 1>.
     (arr: !$A.arr(a, l, n), j: int j, key: a, len: int n)
     : void =
     if j >= 0 then let
-      val cur = $A.get<a>(arr, $AR.checked_idx(j, len))
+      val cur = $A.get<a>(arr, j)
       val c = cmp(cur, key)
     in
       if c > 0 then let
-        val () = $A.set<a>(arr, $AR.checked_idx(j + 1, len), cur)
+        val () = $A.set<a>(arr, j + 1, cur)
       in loop_j(arr, j - 1, key, len) end
       else
-        $A.set<a>(arr, $AR.checked_idx(j + 1, len), key)
+        $A.set<a>(arr, j + 1, key)
     end
     else
-      $A.set<a>(arr, $AR.checked_idx(j + 1, len), key)
+      $A.set<a>(arr, j + 1, key)
 
   (*
    * Outer loop: iterate i from 1 to n-1.

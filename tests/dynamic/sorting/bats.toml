@@ -1,0 +1,7 @@
+[package]
+name = "sorting"
+kind = "bin"
+
+[dependencies]
+"array" = ""
+"sort" = ""
