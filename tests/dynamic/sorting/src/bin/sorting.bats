@@ -27,6 +27,9 @@ implement main0 () = let
   val r3 = is("reversed", arr, 1, 2, 3, 4, 5)
   val () = fill(arr, 2, 1, 2, 1, 2) val () = $S.sort_int(arr, 5)
   val r4 = is("duplicates", arr, 1, 1, 2, 2, 2)
+  (* Differences here overflow int, so a - b would misorder them. *)
+  val () = fill(arr, 2147483647, ~2147483647 - 1, 0, ~5, 7) val () = $S.sort_int(arr, 5)
+  val r7 = is("extremes", arr, ~2147483647 - 1, ~5, 0, 7, 2147483647)
   val () = fill(arr, 10, 30, 20, 50, 40)
   val () = $S.sort_with<int>(arr, 5, lam (a: int, b: int): int =<cloref1> b - a)
   val r5 = is("descending", arr, 50, 40, 30, 20, 10)
@@ -37,6 +40,6 @@ implement main0 () = let
   val () = (if r6 then () else println! ("FAIL single"))
   val () = $A.free<int>(one)
 in
-  if r1 && r2 && r3 && r4 && r5 && r6 then println! ("sorting: all cases pass")
+  if r1 && r2 && r3 && r4 && r5 && r6 && r7 then println! ("sorting: all cases pass")
   else exit_void(1)
 end
