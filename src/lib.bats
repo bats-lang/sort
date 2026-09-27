@@ -17,28 +17,27 @@ sort_int
   : void
 
 #pub fun{a:t@ype}
-sort_with
-  {l:agz}{n:pos}
-  (arr: !$A.arr(a, l, n), len: int n, cmp: (a, a) -<cloref1> int)
-  : void
-
-#pub fun{a:t@ype}
 sort_by
   {l:agz}{n:pos}
   (arr: !$A.arr(a, l, n), len: int n, cmp: (a, a) -<fun1> int)
   : void
 
-(* ============================================================
-   Implementation -- insertion sort with a comparator and its
-   environment. The comparator is a plain function (nothing is
-   allocated for it); what it needs is passed in env.
-   ============================================================ *)
-
-fn{a:t@ype}{e:t@ype}
-_sort_env
+(* Sorts by cmp, a plain function given env, what it needs (the values
+   a closure would capture): nothing is allocated, where a closure would
+   be allocated by every caller and never freed (there is no GC) *)
+#pub fun{a:t@ype}{e:t@ype}
+sort_env
   {l:agz}{n:pos}
   (arr: !$A.arr(a, l, n), len: int n, env: e, cmp: (e, a, a) -<fun1> int)
-  : void = let
+  : void
+
+(* ============================================================
+   Implementation -- insertion sort with a comparator and its
+   environment.
+   ============================================================ *)
+
+implement{a}{e}
+sort_env{l}{n}(arr, len, env, cmp) = let
   (*
    * Inner loop: shift elements right while arr[j] > key.
    * j ranges from n-2 down to -1, so j + 1 < n: both j (once j >= 0)
@@ -81,15 +80,9 @@ in
   loop_i(arr, 1, len)
 end
 
-(* The closure is the caller's: sort_with allocates nothing. *)
-implement{a}
-sort_with{l}{n}(arr, len, cmp) =
-  _sort_env<a><(a, a) -<cloref1> int>(arr, len, cmp,
-    lam (f: (a, a) -<cloref1> int, x: a, y: a): int =<fun1> f(x, y))
-
 implement{a}
 sort_by{l}{n}(arr, len, cmp) =
-  _sort_env<a><(a, a) -<fun1> int>(arr, len, cmp,
+  sort_env<a><(a, a) -<fun1> int>(arr, len, cmp,
     lam (f: (a, a) -<fun1> int, x: a, y: a): int =<fun1> f(x, y))
 
 (* ============================================================
@@ -121,14 +114,15 @@ fn _test_sort_int(): void = let
   val () = $A.free<int>(arr)
 in () end
 
-fn _test_sort_with(): void = let
+fn _test_sort_env(): void = let
   val arr = $A.alloc<int>(4)
   val () = $A.set<int>(arr, 0, 10)
   val () = $A.set<int>(arr, 1, 30)
   val () = $A.set<int>(arr, 2, 20)
   val () = $A.set<int>(arr, 3, 40)
-  val () = sort_with<int>(arr, 4,
-    lam (a: int, b: int): int =<cloref1> b - a)
+  val () = sort_env<int><int>(arr, 4, ~1,
+    lam (s: int, a: int, b: int): int =<fun1>
+      if a < b then ~s else if a > b then s else 0)
   val () = $A.free<int>(arr)
 in () end
 
