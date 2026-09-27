@@ -17,6 +17,8 @@ fn is {l:agz} (name: string, arr: !$A.arr(int, l, 5), a: int, b: int, c: int, d:
     $A.get<int>(arr, 3), " ", $A.get<int>(arr, 4)))
 in ok end
 
+fn desc (a: int, b: int):<fun1> int = b - a
+
 implement main0 () = let
   val arr = $A.alloc<int>(5)
   val () = fill(arr, 5, 3, 1, 4, 2) val () = $S.sort_int(arr, 5)
@@ -31,7 +33,7 @@ implement main0 () = let
   val () = fill(arr, 2147483647, ~2147483647 - 1, 0, ~5, 7) val () = $S.sort_int(arr, 5)
   val r7 = is("extremes", arr, ~2147483647 - 1, ~5, 0, 7, 2147483647)
   val () = fill(arr, 10, 30, 20, 50, 40)
-  val () = $S.sort_with<int>(arr, 5, lam (a: int, b: int): int =<cloref1> b - a)
+  val () = $S.sort_by<int>(arr, 5, desc)
   val r5 = is("descending", arr, 50, 40, 30, 20, 10)
   val () = $A.free<int>(arr)
   val one = $A.alloc<int>(1)
