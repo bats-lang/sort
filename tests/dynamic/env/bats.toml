@@ -1,5 +1,5 @@
 [package]
-name = "closure"
+name = "env"
 kind = "bin"
 
 [dependencies]
