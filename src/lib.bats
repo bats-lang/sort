@@ -22,12 +22,23 @@ sort_with
   (arr: !$A.arr(a, l, n), len: int n, cmp: (a, a) -<cloref1> int)
   : void
 
+#pub fun{a:t@ype}
+sort_by
+  {l:agz}{n:pos}
+  (arr: !$A.arr(a, l, n), len: int n, cmp: (a, a) -<fun1> int)
+  : void
+
 (* ============================================================
-   Implementation -- insertion sort with custom comparator
+   Implementation -- insertion sort with a comparator and its
+   environment. The comparator is a plain function (nothing is
+   allocated for it); what it needs is passed in env.
    ============================================================ *)
 
-implement{a}
-sort_with{l}{n}(arr, len, cmp) = let
+fn{a:t@ype}{e:t@ype}
+_sort_env
+  {l:agz}{n:pos}
+  (arr: !$A.arr(a, l, n), len: int n, env: e, cmp: (e, a, a) -<fun1> int)
+  : void = let
   (*
    * Inner loop: shift elements right while arr[j] > key.
    * j ranges from n-2 down to -1, so j + 1 < n: both j (once j >= 0)
@@ -40,7 +51,7 @@ sort_with{l}{n}(arr, len, cmp) = let
     : void =
     if j >= 0 then let
       val cur = $A.get<a>(arr, j)
-      val c = cmp(cur, key)
+      val c = cmp(env, cur, key)
     in
       if c > 0 then let
         val () = $A.set<a>(arr, j + 1, cur)
@@ -70,16 +81,30 @@ in
   loop_i(arr, 1, len)
 end
 
+(* The closure is the caller's: sort_with allocates nothing. *)
+implement{a}
+sort_with{l}{n}(arr, len, cmp) =
+  _sort_env<a><(a, a) -<cloref1> int>(arr, len, cmp,
+    lam (f: (a, a) -<cloref1> int, x: a, y: a): int =<fun1> f(x, y))
+
+implement{a}
+sort_by{l}{n}(arr, len, cmp) =
+  _sort_env<a><(a, a) -<fun1> int>(arr, len, cmp,
+    lam (f: (a, a) -<fun1> int, x: a, y: a): int =<fun1> f(x, y))
+
 (* ============================================================
-   Implementation -- sort_int via sort_with
+   Implementation -- sort_int via sort_by
    ============================================================ *)
 
 (* Three-way comparison: a - b would overflow for large differences
-   (e.g. the minimum int against any positive value). *)
+   (e.g. the minimum int against any positive value). A plain
+   function, not a closure: a closure made on each call would be
+   allocated and never freed. *)
+fn _cmp_int (a: int, b: int):<fun1> int =
+  if a < b then ~1 else if a > b then 1 else 0
+
 implement
-sort_int{l}{n}(arr, len) =
-  sort_with<int>(arr, len,
-    lam (a: int, b: int): int =<cloref1> if a < b then ~1 else if a > b then 1 else 0)
+sort_int{l}{n}(arr, len) = sort_by<int>(arr, len, _cmp_int)
 
 (* ============================================================
    Static tests

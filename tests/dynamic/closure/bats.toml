@@ -1,0 +1,7 @@
+[package]
+name = "closure"
+kind = "bin"
+
+[dependencies]
+"array" = ""
+"sort" = ""
